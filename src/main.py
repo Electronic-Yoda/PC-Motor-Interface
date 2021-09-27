@@ -19,17 +19,20 @@ class MotorUI():
         self.accelVal = 0
         self.regenVal = 0
         self.accelTurn = True
+        self.vfmCount = 1
         self.mainTime = time.time()
         self.forRevTime = time.time()
         self.accelTime = time.time()
         self.regenTime = time.time()
+        self.vfmUpTime = time.time()
+        self.vfmDownTime = time.time()
         
         self.mainButton = tk.Button(root, text='MAIN', command=self.mainButtonCallBack, 
-            background=greenBlue, foreground='white', font=('Fixedsys', 12), borderwidth=3)
+            background=lightBlue2, foreground='white', font=('Fixedsys', 12), borderwidth=3)
         self.mainLabel = tk.Label(root, text="OFF", font=('Fixedsys', 12), bg='black', foreground='yellow')
         
         self.forRevButton = tk.Button(root, text='FwdRev', command=self.forRevButtonCallBack, 
-            background=greenBlue, foreground='white', font=('Fixedsys', 12), borderwidth=3)
+            background=lightBlue1, foreground='white', font=('Fixedsys', 12), borderwidth=3)
         self.forRevLabel = tk.Label(root, text="FWD", font=('Fixedsys', 12), bg='black', foreground='yellow')
 
         self.accelSlider = tk.Scale(root, from_=255, to=0, bg=lightBlue1, foreground='black', command=self.accelSliderCallback)
@@ -39,7 +42,11 @@ class MotorUI():
         self.regenButton = tk.Button(root, text='Send', command=self.regenButtonCallback) 
         self.regenLabel = tk.Label(root, text="Regen", font=('Fixedsys', 12), bg=blueish, foreground='white')
 
-
+        self.vfmUpButton = tk.Button(root, text='VFM \n\nUP  ', command=self.vfmUpButtonCallback, 
+            background=greenBlue, foreground='white', font=('Fixedsys', 12), borderwidth=3)
+        self.vfmDownButton = tk.Button(root, text='VFM \n\nDOWN', command=self.vfmDownButtonCallback, 
+            background=greenBlue, foreground='white', font=('Fixedsys', 12), borderwidth=3)
+        self.vfmLabel = tk.Label(root, text="1", font=('Fixedsys', 14), bg='black', foreground='yellow')
 
         # Send initial serial data to DCMB emulator
         off = "MOff"
@@ -56,10 +63,10 @@ class MotorUI():
         rightX = leftX + self.buttonWidth1 + 10
 
         self.mainButton.place(x=leftX, y=50, width=self.buttonWidth1)
-        self.mainLabel.place(x=rightX, y=50, width=self.labelWidth1)
+        self.mainLabel.place(x=rightX, y=50, width=self.labelWidth1+5)
 
         self.forRevButton.place(x=leftX, y=100, width=self.buttonWidth1)
-        self.forRevLabel.place(x=rightX, y=100, width=self.labelWidth1)
+        self.forRevLabel.place(x=rightX, y=100, width=self.labelWidth1+5)
 
         sliderX = 250
         sliderW = 45
@@ -71,6 +78,11 @@ class MotorUI():
         self.regenButton.place(x=sliderX2, y=170, width=sliderW)
         self.regenLabel.place(x=sliderX2, y=200)
 
+        self.vfmDownButton.place(x=leftX, y=155)
+        self.vfmLabel.place(x=(rightX-leftX), y=165)
+        self.vfmUpButton.place(x=rightX, y=155)
+        
+
     def mainButtonCallBack(self):
         if time.time() - self.mainTime < 1:
             return
@@ -78,7 +90,7 @@ class MotorUI():
         if not self.motorOn:
             self.motorOn = True
             self.mainLabel.config(text="ON")
-            # Send serial data to DCMB emulator
+            # Send serial data to DCMB-Emulator
             on = "M On"
             ser.write(on.encode('utf8'))
             
@@ -134,8 +146,8 @@ class MotorUI():
             regen = "R" + " " + str(regenInt)
         else:
             regen = "R" + str(regenInt)
-        print(regen)
-        ser.write(regen.encode("utf8"))
+        ser.write(regen.encode('utf8'))
+        print(regen.encode('utf8'))
 
     def accelSliderCallback(self, var): # Note: var is needed due to some tkinter bug?
         # accelValue = str(self.accelSlider.get())
@@ -151,6 +163,33 @@ class MotorUI():
         # print(regen)
         # ser.write(regen.encode("utf8"))
 
+    def vfmUpButtonCallback(self):
+        if time.time() - self.vfmUpTime < 1:
+            return
+        if self.vfmCount >= 4:
+            return
+        self.vfmUpTime = time.time()
+        self.vfmCount += 1
+        self.vfmLabel.config(text=str(self.vfmCount))
+        # Send to DCMB emulator
+        up = "V" + "  " + str(self.vfmCount)
+        ser.write(up.encode("utf8"))
+        print(up.encode("utf8"))
+
+
+    def vfmDownButtonCallback(self):
+        if time.time() - self.vfmDownTime < 1:
+            return
+        if self.vfmCount <= 1:
+            return
+        self.vfmDownTime = time.time()
+        self.vfmCount -= 1
+        self.vfmLabel.config(text=str(self.vfmCount))
+        # Send to DCMB emulator
+        down = "V" + "  " + str(self.vfmCount)
+        ser.write(down.encode("utf8"))
+        print(down.encode("utf8"))
+    # not used
     def sendAccelOrRegen(self):
         accelInt = self.accelSlider.get()
         regenInt = self.regenSlider.get()
