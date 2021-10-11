@@ -20,12 +20,13 @@ class MotorUI():
         self.regenVal = 0
         self.accelTurn = True
         self.vfmCount = 1
-        self.mainTime = time.time()
-        self.forRevTime = time.time()
-        self.accelTime = time.time()
-        self.regenTime = time.time()
-        self.vfmUpTime = time.time()
-        self.vfmDownTime = time.time()
+        # self.mainTime = time.time()
+        # self.forRevTime = time.time()
+        # self.accelTime = time.time()
+        # self.regenTime = time.time()
+        # self.vfmUpTime = time.time()
+        # self.vfmDownTime = time.time()
+        self.buttonTime = time.time()
         
         self.mainButton = tk.Button(root, text='MAIN', command=self.mainButtonCallBack, 
             background=lightBlue2, foreground='white', font=('Fixedsys', 12), borderwidth=3)
@@ -84,15 +85,16 @@ class MotorUI():
         
 
     def mainButtonCallBack(self):
-        if time.time() - self.mainTime < 1:
+        if time.time() - self.buttonTime < 1:
             return
-        self.mainTime = time.time()
+        self.buttonTime = time.time()
         if not self.motorOn:
             self.motorOn = True
             self.mainLabel.config(text="ON")
             # Send serial data to DCMB-Emulator
             on = "M On"
             ser.write(on.encode('utf8'))
+            print(on)
             
         elif self.motorOn:
             self.motorOn = False
@@ -100,18 +102,19 @@ class MotorUI():
             # Send serial data to DCMB emulator
             off = "MOff"
             ser.write(off.encode('utf8'))
+            print(off)
     
     def forRevButtonCallBack(self):
-        if time.time() - self.forRevTime < 1:
+        if time.time() - self.buttonTime < 1:
             return
-        self.forRevTime = time.time()
+        self.buttonTime = time.time()
         if not self.forward:
             self.forward = True
             self.forRevLabel.config(text="FWD")
             # Send serial data to DCMB emulator
             fwd = "F wd"
             ser.write(fwd.encode("utf8"))
-            
+                
         elif self.forward:
             self.forward = False
             self.forRevLabel.config(text="REV")
@@ -121,9 +124,9 @@ class MotorUI():
 
 
     def accelButtonCallback(self):
-        if time.time() - self.accelTime < 1:
+        if time.time() - self.buttonTime < 1:
             return
-        self.accelTime = time.time()
+        self.buttonTime = time.time()
         accelInt = self.accelSlider.get()
         if accelInt < 10:
             accel = "A" + "  " + str(accelInt)
@@ -136,9 +139,9 @@ class MotorUI():
 
 
     def regenButtonCallback(self):
-        if time.time() - self.regenTime < 1:
+        if time.time() - self.buttonTime < 1:
             return
-        self.regenTime = time.time()
+        self.buttonTime = time.time()
         regenInt = self.regenSlider.get()
         if regenInt < 10:
             regen = "R" + "  " + str(regenInt)
@@ -164,11 +167,11 @@ class MotorUI():
         # ser.write(regen.encode("utf8"))
 
     def vfmUpButtonCallback(self):
-        if time.time() - self.vfmUpTime < 1:
+        if time.time() - self.buttonTime < 1:
             return
         if self.vfmCount >= 4:
             return
-        self.vfmUpTime = time.time()
+        self.buttonTime = time.time()
         self.vfmCount += 1
         self.vfmLabel.config(text=str(self.vfmCount))
         # Send to DCMB emulator
@@ -178,11 +181,11 @@ class MotorUI():
 
 
     def vfmDownButtonCallback(self):
-        if time.time() - self.vfmDownTime < 1:
+        if time.time() - self.buttonTime < 1:
             return
         if self.vfmCount <= 1:
             return
-        self.vfmDownTime = time.time()
+        self.buttonTime = time.time()
         self.vfmCount -= 1
         self.vfmLabel.config(text=str(self.vfmCount))
         # Send to DCMB emulator
