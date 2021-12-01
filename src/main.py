@@ -8,7 +8,7 @@ from os import path
 root = tk.Tk()
 
 # Create serial port
-ser = serial.Serial('com3', 115200, timeout=1)
+ser = serial.Serial('com3', 9600, timeout=1)
 
 class MotorUI():
     def __init__(self) -> None:
